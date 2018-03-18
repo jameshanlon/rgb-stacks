@@ -1,3 +1,5 @@
 rgbstacks.X/*
 *.DS_Store
 *.bak
+PIC/build
+PIC/dist
