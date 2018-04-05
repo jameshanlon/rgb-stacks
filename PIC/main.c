@@ -45,11 +45,14 @@
  * Driver 12 channel C
  */
 
-#define DRIVER_ID    (0)
-#define START_PACKET (255)
-#define PACKET_SIZE  (37)
+#define DRIVER_ID     (3)
+#define NUM_DRIVERS   (12)
+#define NUM_CHANS     (3)
+#define START_PACKET  (255)
+#define DRIVER_OFFSET (DRIVER_ID*NUM_CHANS)
+#define PAYLOAD_SIZE  (NUM_DRIVERS*NUM_CHANS)
 
-unsigned char uart_data[4];
+unsigned char uart_data[PAYLOAD_SIZE];
 unsigned char uart_byte;
 unsigned int uart_count;
 
@@ -130,18 +133,14 @@ void send_byte(unsigned char byte) {
 }
 
 void handle_uart_data() {
-  if (uart_data[0] == DRIVER_ID) {
-    // Acknowledge packet.
-    //send_byte(DRIVER_ID);
-    // Set the duty cycles, scale an 8-bit range into 16.
-    PWM1DC = uart_data[DRIVER_ID+0] * 256;
-    PWM2DC = uart_data[DRIVER_ID+1] * 256;
-    PWM3DC = uart_data[DRIVER_ID+2] * 256;
+    // Set the duty cycles, scale an 8-bit range into 16 bits.
+    PWM1DC = uart_data[DRIVER_OFFSET+0] * 256;
+    PWM2DC = uart_data[DRIVER_OFFSET+1] * 256;
+    PWM3DC = uart_data[DRIVER_OFFSET+2] * 256;
     // Reload the PWMs.
     PWM1LD = 1;
     PWM2LD = 1;
     PWM3LD = 1;
-  }
 }
 
 void interrupt interrupt_handler() {
@@ -159,8 +158,8 @@ void interrupt interrupt_handler() {
       } else {
         // Packet payload.
         uart_data[uart_count++] = RCREGbits.RCREG;
-        // When we've received 3 bytes, update PWMs and setup for next packet.
-        if (uart_count == (PACKET_SIZE + 1)) {
+        // When we've received the payload, update PWMs and setup for next packet.
+        if (uart_count == PAYLOAD_SIZE) {
           handle_uart_data();
           uart_count = 0;
         }
