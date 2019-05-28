@@ -118,9 +118,9 @@ void init_pwm() {
   PWM2DC = 0;
   PWM3DC = 0;
   // Period (16 bits).
+  PWM1PR = 32768;
   PWM2PR = 32768;
-  PWM2PR = 32768;
-  PWM2PR = 32768;
+  PWM3PR = 32768;
 }
 
 void send_byte(unsigned char byte) {
